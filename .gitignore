@@ -1,0 +1,11 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.plan
+*.tfvars
+*.tfvars.json
+.terraform.lock.hcl
+
+# VSCode
+.vscode/
