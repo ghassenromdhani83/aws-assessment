@@ -3,22 +3,25 @@ import json
 import asyncio
 import httpx
 import boto3
+import os
 from typing import Dict
 
 # ====== CONFIGURATION ======
 COGNITO_CLIENT_ID = os.environ.get("COGNITO_CLIENT_ID")
 COGNITO_USER_POOL_ID = os.environ.get("COGNITO_USER_POOL_ID")
-USERNAME = os.environ.get("COGNITO_USER")
+USERNAME = os.environ.get("EMAIL")
 PASSWORD = os.environ.get("COGNITO_USER_PASSWORD")
+API_ENDPOINT_US = os.environ.get("API_ENDPOINT_US")
+API_ENDPOINT_EU = os.environ.get("API_ENDPOINT_EU")
 
 API_ENDPOINTS = {
     "us-east-1": {
-        "greet": "https://qklpvjc1gd.execute-api.us-east-1.amazonaws.com/greet",
-        "dispatch": "https://qklpvjc1gd.execute-api.us-east-1.amazonaws.com/dispatch"
+        "greet": f"{API_ENDPOINT_US}/greet",
+        "dispatch": f"{API_ENDPOINT_US}/dispatch"
     },
-    "us-west-2": {
-        "greet": "https://akmyxa482a.execute-api.eu-west-1.amazonaws.com/greet",
-        "dispatch": "https://akmyxa482a.execute-api.eu-west-1.amazonaws.com/dispatch"
+    "eu-west-1": {
+        "greet": f"{API_ENDPOINT_EU}/greet",
+        "dispatch": f"{API_ENDPOINT_EU}/dispatch"
     }
 }
 

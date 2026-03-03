@@ -1,0 +1,78 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.14.6
+          terraform_wrapper: false # This prevents the output pollution needed in TF outputs
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: Terraform validate
+        run: terraform init -backend=false && terraform validate
+
+      - name: Terraform plan
+        env:
+          TF_VAR_email: ${{ secrets.EMAIL }}
+          TF_VAR_repo_url: ${{ secrets.REPO_URL }}
+          TF_VAR_cognito_user_password: ${{ secrets.COGNITO_USER_PASSWORD }}
+          TF_VAR_sns_topic_arn: ${{ secrets.SNS_TOPIC_ARN }}
+        run: terraform plan -out=tfplan
+
+      - name: Terraform apply
+        run: |
+          # Make sure debug logs do not pollute stdout
+          unset TF_LOG
+          terraform apply tfplan
+      
+          # Capture outputs cleanly
+          COGNITO_POOL_ID=$(terraform output -raw cognito_user_pool_id)
+          COGNITO_CLIENT_ID=$(terraform output -raw cognito_user_pool_client_id)
+          API_ENDPOINT_EU=$(terraform output -raw api_endpoint_eu)
+          API_ENDPOINT_US=$(terraform output -raw api_endpoint_us)
+          # Export to GitHub Actions environment
+          echo "COGNITO_POOL_ID=${COGNITO_POOL_ID}" >> $GITHUB_ENV
+          echo "COGNITO_CLIENT_ID=${COGNITO_CLIENT_ID}" >> $GITHUB_ENV
+          echo "API_ENDPOINT_US=${API_ENDPOINT_US}" >> $GITHUB_ENV
+          echo "API_ENDPOINT_EU=${API_ENDPOINT_EU}" >> $GITHUB_ENV
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Python dependencies
+        run: pip install --upgrade pip && pip install httpx boto3
+
+      - name: Run automated API tests
+        env:
+          COGNITO_USER_POOL_ID: ${{ env.COGNITO_POOL_ID }}
+          COGNITO_CLIENT_ID: ${{ env.COGNITO_CLIENT_ID }}
+          COGNITO_USER_PASSWORD: ${{ secrets.COGNITO_USER_PASSWORD }}
+          EMAIL: ${{ secrets.EMAIL }}
+          REPO_URL: ${{ secrets.REPO_URL }}
+          SNS_TOPIC_ARN: ${{ secrets.SNS_TOPIC_ARN }}
+        run: python3 test_apis.py
