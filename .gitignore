@@ -1,10 +1,22 @@
-# Terraform
+# Terraform local directories
 .terraform/
-*.plan
+
+# Terraform state files
+*.tfstate
+*.tfstate.*
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+
+# Terraform plan output
+*.tfplan
+newplan
+
+# Variable files (may contain secrets)
 *.tfvars
 *.tfvars.json
-.terraform.lock.hcl
-terraform.*
+*.auto.tfvars
+
 newplan
 
 # VSCode

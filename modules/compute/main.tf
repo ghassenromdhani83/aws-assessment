@@ -244,7 +244,7 @@ resource "aws_ecs_task_definition" "dispatcher_task" {
       essential = true
       command   = ["sh", "-c", "aws sns publish --topic-arn $SNS_TOPIC --message '{\"email\":\"$EMAIL\",\"source\":\"ECS\",\"region\":\"$REGION\",\"repo\":\"$REPO\"}'"]
       environment = [
-        { name = "SNS_TOPIC", value = "arn:aws:sns:us-east-1:263274769945:sns-test" },
+        { name = "SNS_TOPIC", value = "${var.sns_topic_arn}" },
         { name = "EMAIL", value = var.email },
         { name = "REGION", value = var.region },
         { name = "REPO", value = var.repo_url }

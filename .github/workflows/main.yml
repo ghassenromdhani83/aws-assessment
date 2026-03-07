@@ -28,11 +28,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=tfstate-bucket-shared-services" \
+            -backend-config="region=us-east-1" \
+            -backend-config="key=unleash.tfstate" \
+            -backend-config="use_lockfile=true"
+
       - name: Terraform fmt
         run: terraform fmt -check -recursive
 
       - name: Terraform validate
-        run: terraform init -backend=false && terraform validate
+        run: terraform validate
 
       - name: Terraform plan
         env:
