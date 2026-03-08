@@ -81,7 +81,7 @@ resource "null_resource" "set_user_password" {
         --username ${var.cognito_user} \
         --password "${var.cognito_user_password}" \
         --permanent \
-        --region ${data.aws_region.current.name}
+        --region ${data.aws_region.current.id}
     EOT
   }
 }

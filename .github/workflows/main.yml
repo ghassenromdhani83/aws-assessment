@@ -34,7 +34,8 @@ jobs:
             -backend-config="bucket=tfstate-bucket-shared-services" \
             -backend-config="region=us-east-1" \
             -backend-config="key=unleash.tfstate" \
-            -backend-config="use_lockfile=true"
+            -backend-config="use_lockfile=true" \
+            -upgrade
 
       - name: Terraform fmt
         run: terraform fmt -check -recursive
